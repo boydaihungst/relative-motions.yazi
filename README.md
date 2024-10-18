@@ -4,6 +4,10 @@ A [Yazi](https://github.com/sxyazi/yazi) plugin based about vim motions.
 
 https://github.com/dedukun/relative-motions.yazi/assets/25795432/04fb186a-5efe-442d-8d7b-2dccb6eee408
 
+**(New) Smart truncate feature**
+
+![(New) Smart truncate](https://i.imgur.com/P8WKB4B.png)
+
 ## Requirements
 
 - [Yazi](https://github.com/sxyazi/yazi) v0.3.0+
@@ -82,11 +86,12 @@ desc = "Trigger a new relative motion"
 
 Additionally there are a couple of initial configurations that can be given to the plugin's `setup` function:
 
-| Configuration  | Values                                                | Default | Description                                                                                                                        |
-| -------------- | ----------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `show_numbers` | `relative`, `absolute`, `relative_absolute` or `none` | `none`  | Shows relative or absolute numbers before the file icon                                                                            |
-| `show_motion`  | `true` or `false`                                     | `false` | Shows current motion in Status bar                                                                                                 |
-| `only_motions` | `true` or `false`                                     | `false` | If true, only the motion movements will be enabled, i.e., the commands for delete, cut, yank and visual selection will be disabled |
+| Configuration          | Values                                                | Default | Description                                                                                                                        |
+| ---------------------- | ----------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `show_numbers`         | `relative`, `absolute`, `relative_absolute` or `none` | `none`  | Shows relative or absolute numbers before the file icon                                                                            |
+| `show_motion`          | `true` or `false`                                     | `false` | Shows current motion in Status bar                                                                                                 |
+| `only_motions`         | `true` or `false`                                     | `false` | If true, only the motion movements will be enabled, i.e., the commands for delete, cut, yank and visual selection will be disabled |
+| `smart_truncate` (new) | `true` or `false`                                     | `true`  | Truncate filename/folder and symlink, but keep extension. i.e, `long_named_file….mkv`                                              |
 
 If you want, for example, to enable relative numbers as well as to show the motion in the status bar,
 add the following to Yazi's `init.lua`, i.e. `~/.config/yazi/init.lua`:
