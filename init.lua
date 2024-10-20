@@ -79,14 +79,10 @@ end)
 ---shorten string
 ---@param w number max characters
 ---@param s string string
----@param tail? string file extentions
+---@param tail? string file extentions or any thing which will shows at the end when file is truncated
 ---@return { result: string, ellipsis: string, n_ellipsis: number }
 local shorten = function(w, s, tail)
-	local e_with_dot = ""
-	if tail then
-		e_with_dot = "." .. tail
-	end
-	local ellipsis = "…" .. e_with_dot
+	local ellipsis = "…" .. tail
 	local n_ellipsis = utf8.len(ellipsis)
 	if utf8.len(s) > w then
 		local result = s:sub(1, utf8.offset(s, w - n_ellipsis + 1) - 1) .. ellipsis
@@ -221,7 +217,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 							end
 						end
 
-						local shortened_name = shorten(max_length, name, extension)
+						local shortened_name = shorten(max_length, name, "." .. extension)
 						local highlights = entity_highlight_self._file:highlights()
 						if not highlights or #highlights == 0 then
 							return ui.Line(shortened_name.result)
@@ -291,7 +287,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 						end
 
 						local to_extension = Url(tostring(to)).ext(to)
-						local shortened = shorten(max_length, prefix .. tostring(to), to_extension)
+						local shortened = shorten(max_length, prefix .. tostring(to), "." .. to_extension)
 
 						return ui.Line(shortened.result):italic():align(ui.Line.RIGHT)
 					end
