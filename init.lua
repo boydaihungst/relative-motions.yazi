@@ -217,7 +217,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 							end
 						end
 
-						local shortened_name = shorten(max_length, name, "." .. extension)
+						local shortened_name = shorten(max_length, name, "." .. (extension or ""))
 						local highlights = entity_highlight_self._file:highlights()
 						if not highlights or #highlights == 0 then
 							return ui.Line(shortened_name.result)
@@ -287,7 +287,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 						end
 
 						local to_extension = Url(tostring(to)).ext(to)
-						local shortened = shorten(max_length, prefix .. tostring(to), "." .. to_extension)
+						local shortened = shorten(max_length, prefix .. tostring(to), "." .. (to_extension or ""))
 
 						return ui.Line(shortened.result):italic():align(ui.Line.RIGHT)
 					end
