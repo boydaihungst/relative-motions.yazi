@@ -82,7 +82,7 @@ end)
 ---@param tail? string file extentions or any thing which will shows at the end when file is truncated
 ---@return { result: string, ellipsis: string, n_ellipsis: number }
 local shorten = function(w, s, tail)
-	local ellipsis = "…" .. tail
+	local ellipsis = "…" .. (tail or "")
 	local n_ellipsis = utf8.len(ellipsis)
 	if utf8.len(s) > w then
 		local result = s:sub(1, utf8.offset(s, w - n_ellipsis + 1) - 1) .. ellipsis
