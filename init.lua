@@ -77,13 +77,15 @@ local render_motion = ya.sync(function(_, motion_num, motion_cmd)
 end)
 
 ---shorten string
----@param w number max characters
----@param s string string
+---@param _w number max characters
+---@param _s string string
 ---@param tail? string file extentions or any thing which will shows at the end when file is truncated
 ---@return { result: string, ellipsis: string, n_ellipsis: number }
-local shorten = function(w, s, tail)
+local shorten = function(_w, _s, tail)
+	local w = _w or 0
+	local s = _s or ""
 	local ellipsis = "…" .. (tail or "")
-	local n_ellipsis = utf8.len(ellipsis)
+	local n_ellipsis = utf8.len(ellipsis) or 0
 	if utf8.len(s) > w then
 		local result = s:sub(1, utf8.offset(s, w - n_ellipsis + 1) - 1) .. ellipsis
 		return { result = result, ellipsis = ellipsis, n_ellipsis = n_ellipsis }
