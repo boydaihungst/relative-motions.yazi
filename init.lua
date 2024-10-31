@@ -33,9 +33,7 @@ local DIRECTION_KEYS = {
 local render_motion_setup = ya.sync(function(_)
 	ya.render()
 
-	Status.motion = function()
-		return ui.Span("")
-	end
+	Status.motion = function() return ui.Span("") end
 
 	Status.children_redraw = function(self, side)
 		local lines = {}
@@ -69,12 +67,12 @@ local render_motion = ya.sync(function(_, motion_num, motion_cmd)
 			motion_span = ui.Span(string.format(" %3d%s ", motion_num, motion_cmd)):style(style)
 		end
 
-		return ui.Line({
+		return ui.Line {
 			ui.Span(THEME.status.separator_open):fg(style.bg),
 			motion_span,
 			ui.Span(THEME.status.separator_close):fg(style.bg),
 			ui.Span(" "),
-		})
+		}
 	end
 end)
 
@@ -84,12 +82,12 @@ end)
 ---@param tail? string file extentions or any thing which will shows at the end when file is truncated
 ---@return { result: string, ellipsis: string, n_ellipsis: number }
 local shorten = function(_w, _s, tail)
-	local w = _w or 0
+	local w = _w or utf8.len(_s)
 	local s = _s or ""
 	local ellipsis = "…" .. (tail or "")
-	local n_ellipsis = utf8.len(ellipsis) or 0
+	local n_ellipsis = utf8.len(ellipsis)
 	if utf8.len(s) > w then
-		local result = s:sub(1, utf8.offset(s, w - n_ellipsis + 1) - 1) .. ellipsis
+		local result = s:sub(1, (utf8.offset(s, w - n_ellipsis + 1) or 2) - 1) .. ellipsis
 		return { result = result, ellipsis = ellipsis, n_ellipsis = n_ellipsis }
 	end
 	return { result = s, ellipsis = "", n_ellipsis = 0 }
@@ -136,11 +134,9 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 		end
 
 		if hovered == index then
-			return ui.Span(string.format("%" .. tostring(offset + 1) .. "d ", idx))
-				:style(styles and styles.hovered or {})
+			return ui.Span(string.format("%" .. tostring(offset + 1) .. "d ", idx)):style(styles and styles.hovered or {})
 		else
-			return ui.Span(string.format("%" .. tostring(offset + 1) .. "d ", idx))
-				:style(styles and styles.normal or {})
+			return ui.Span(string.format("%" .. tostring(offset + 1) .. "d ", idx)):style(styles and styles.normal or {})
 		end
 	end
 
@@ -254,8 +250,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 							-- find command result not matched part
 							-- from last to h1
 							if h[1] > last then
-								highlight_spans[#highlight_spans + 1] =
-									ui.Span(shortened_name.result:sub(last + 1, h[1]))
+								highlight_spans[#highlight_spans + 1] = ui.Span(shortened_name.result:sub(last + 1, h[1]))
 							end
 							-- find command result matched part
 							-- from h1 to h2
@@ -277,12 +272,12 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 					-- override symlink Entity:symlink function
 					entity.symlink = function(entity_symlink_self)
 						if not MANAGER.show_symlink then
-							return ui.Span({})
+							return ui.Span {}
 						end
 
 						local to = entity_symlink_self._file.link_to
 						if not to then
-							return ui.Line({})
+							return ui.Line {}
 						end
 
 						local prefix = " -> "
@@ -323,17 +318,13 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 	end
 end)
 
-local function render_clear()
-	render_motion()
-end
+local function render_clear() render_motion() end
 
 -----------------------------------------------
 --------- C O M M A N D   P A R S E R ---------
 -----------------------------------------------
 
-local get_keys = ya.sync(function(state)
-	return state._only_motions and MOTION_KEYS or MOTIONS_AND_OP_KEYS
-end)
+local get_keys = ya.sync(function(state) return state._only_motions and MOTION_KEYS or MOTIONS_AND_OP_KEYS end)
 
 local function normal_direction(dir)
 	if dir == "<Down>" then
@@ -350,7 +341,7 @@ local function get_cmd(first_char, keys)
 
 	while true do
 		render_motion(tonumber(lines))
-		local key = ya.which({ cands = keys, silent = true })
+		local key = ya.which { cands = keys, silent = true }
 		if not key then
 			return nil, nil, nil
 		end
@@ -372,7 +363,7 @@ local function get_cmd(first_char, keys)
 		DIRECTION_KEYS[#DIRECTION_KEYS + 1] = {
 			on = last_key,
 		}
-		local direction_key = ya.which({ cands = DIRECTION_KEYS, silent = true })
+		local direction_key = ya.which { cands = DIRECTION_KEYS, silent = true }
 		if not direction_key then
 			return nil, nil, nil
 		end
@@ -394,9 +385,7 @@ local function is_tab_command(command)
 	return false
 end
 
-local get_active_tab = ya.sync(function(_)
-	return cx.tabs.idx
-end)
+local get_active_tab = ya.sync(function(_) return cx.tabs.idx end)
 
 -----------------------------------------------
 ---------- E N T R Y   /   S E T U P ----------
