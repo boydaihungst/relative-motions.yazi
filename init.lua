@@ -211,7 +211,8 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 					-- override these resizeable components/children render function then re-render the whole entity with truncated/shortened value
 					entity.highlights = function(entity_highlight_self)
 						local name = entity_highlight_self._file.name:gsub("\r", "?", 1)
-						local extension = entity_highlight_self._file.url.ext(entity_highlight_self._file.url)
+						local extension = entity_highlight_self._file.cha.is_dir and ""
+							or entity_highlight_self._file.url.ext(entity_highlight_self._file.url)
 						local max_length = utf8.len(name) or 0
 						for _, c in ipairs(entity_highlight_self._children) do
 							if c[1] and type(c[1]) == "string" and c[1] == "highlights" and c.resizable then
