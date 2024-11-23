@@ -177,7 +177,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 
 					-- loop through all entity children
 					for c_idx, c in ipairs(entity_self._children) do
-						local child_component = (type(c[1]) == "string" and entity_self[c[1]] or c[1])(entity_self)
+						local child_component = ui.Line((type(c[1]) == "string" and entity_self[c[1]] or c[1])(entity_self))
 						local is_resizable = false
 						-- add some metadata for this commponent/children
 						for _, resizable_child_id in ipairs(resizable_entity_children_ids) do
