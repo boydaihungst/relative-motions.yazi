@@ -10,12 +10,12 @@ https://github.com/dedukun/relative-motions.yazi/assets/25795432/04fb186a-5efe-4
 
 ## Requirements
 
-- [Yazi](https://github.com/sxyazi/yazi) v0.3.0+
+- [Yazi](https://github.com/sxyazi/yazi) >= v0.4
 
 ## Installation
 
 ```sh
-ya pack -a dedukun/relative-motions
+ya pack -a boydaihungst/relative-motions
 ```
 
 ## Configuration
