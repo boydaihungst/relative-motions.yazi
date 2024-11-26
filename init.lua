@@ -62,15 +62,14 @@ local render_motion = ya.sync(function(_, motion_num, motion_cmd)
 
 		local motion_span
 		if not motion_cmd then
-			motion_span = ui.Span(string.format("  %3d ", motion_num)):style(style)
+			motion_span = ui.Span(string.format(" %d ", motion_num)):style(style.main)
 		else
-			motion_span = ui.Span(string.format(" %3d%s ", motion_num, motion_cmd)):style(style)
+			motion_span = ui.Span(string.format(" %d%s ", motion_num, motion_cmd)):style(style.main)
 		end
-
 		return ui.Line {
-			ui.Span(THEME.status.separator_open):fg(style.bg),
+			ui.Span(THEME.status.separator_open):fg(style.main.bg),
 			motion_span,
-			ui.Span(THEME.status.separator_close):fg(style.bg),
+			ui.Span(THEME.status.separator_close):fg(style.main.bg):bg(style.alt.bg),
 			ui.Span(" "),
 		}
 	end
