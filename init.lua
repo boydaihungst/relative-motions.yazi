@@ -392,12 +392,12 @@ local get_active_tab = ya.sync(function(_) return cx.tabs.idx end)
 -----------------------------------------------
 
 return {
-	entry = function(_, args)
+	entry = function(_, job)
 		local initial_value
 
 		-- this is checking if the argument is a valid number
-		if args then
-			initial_value = tostring(tonumber(args[1]))
+		if job.args then
+			initial_value = tostring(tonumber(job.args[1]))
 			if initial_value == "nil" then
 				return
 			end
