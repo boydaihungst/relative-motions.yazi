@@ -1,3 +1,5 @@
+--- @since 25.2.5
+
 -- stylua: ignore
 local MOTIONS_AND_OP_KEYS = {
 	{ on = "0" }, { on = "1" }, { on = "2" }, { on = "3" }, { on = "4" },
@@ -412,7 +414,7 @@ return {
 
 		if cmd == "g" then
 			if direction == "g" then
-				ya.manager_emit("arrow", { -99999999 })
+				ya.manager_emit("arrow", { "top" })
 				ya.manager_emit("arrow", { lines - 1 })
 				render_clear()
 				return
