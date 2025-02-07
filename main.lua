@@ -1,4 +1,4 @@
---- @since 25.2.5
+--- @since 25.2.7
 
 -- stylua: ignore
 local MOTIONS_AND_OP_KEYS = {
