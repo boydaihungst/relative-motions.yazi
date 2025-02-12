@@ -69,9 +69,12 @@ local render_motion = ya.sync(function(_, motion_num, motion_cmd)
 			motion_span = ui.Span(string.format(" %d%s ", motion_num, motion_cmd)):style(style.main)
 		end
 		return ui.Line {
-			ui.Span(THEME.status.separator_open):fg(style.main.bg),
+			ui.Span(THEME.status.separator_open or (THEME.status.sep_right and THEME.status.sep_right.open))
+				:fg(style.main.bg),
 			motion_span,
-			ui.Span(THEME.status.separator_close):fg(style.main.bg):bg(style.alt.bg),
+			ui.Span(THEME.status.separator_close or (THEME.status.sep_right and THEME.status.sep_right.close))
+				:fg(style.main.bg)
+				:bg(style.alt.bg),
 			ui.Span(" "),
 		}
 	end
