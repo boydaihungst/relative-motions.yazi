@@ -281,7 +281,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 
 					-- override symlink Entity:symlink function
 					entity.symlink = function(entity_symlink_self)
-						if not (cf and cf.manager or MANAGER).show_symlink then
+						if not (rt and rt.manager or MANAGER).show_symlink then
 							return ui.Span {}
 						end
 
