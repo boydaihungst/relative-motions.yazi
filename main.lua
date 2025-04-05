@@ -1,4 +1,6 @@
 --- @since 25.2.7
+--- NOTE: REMOVE :parent() :name() :is_hovered() :ext() after upgrade to v25.4.4
+--- https://github.com/sxyazi/yazi/pull/2572
 
 -- stylua: ignore
 local MOTIONS_AND_OP_KEYS = {
@@ -159,7 +161,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 		local hovered_index
 		local current_tab_window_w = current_self._area.w
 		for i, f in ipairs(files) do
-			if f:is_hovered() then
+			if type(f.is_hovered) == "function" and f:is_hovered() or f.is_hovered then
 				hovered_index = i
 				break
 			end
@@ -221,7 +223,15 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 					entity.highlights = function(entity_highlight_self)
 						local name = entity_highlight_self._file.name:gsub("\r", "?", 1)
 						local tail = entity_highlight_self._file.cha.is_dir and ""
-							or ("." .. (entity_highlight_self._file.url.ext(entity_highlight_self._file.url) or ""))
+							or (
+								"."
+								.. (
+									(
+										type(entity_highlight_self._file.url.ext) == "function" and entity_highlight_self._file.url:ext()
+										or entity_highlight_self._file.url.ext
+									) or ""
+								)
+							)
 						local max_length = utf8.len(name) or 0
 						for _, c in ipairs(entity_highlight_self._children) do
 							if c[1] and type(c[1]) == "string" and c[1] == "highlights" and c.resizable then
@@ -298,7 +308,8 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 							end
 						end
 
-						local to_extension = Url(tostring(to)).ext(to)
+						local to_url = Url(tostring(to))
+						local to_extension = type(to_url.ext) == "function" and to_url:ext() or to_url.ext
 						local shortened = shorten(max_length, prefix .. tostring(to), "." .. (to_extension or ""))
 
 						return ui.Line(shortened.result):italic():align(ui.Line.RIGHT)
