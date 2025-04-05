@@ -72,13 +72,13 @@ local render_motion = ya.sync(function(_, motion_num, motion_cmd)
 		end
 		return ui.Line {
 			ui.Span(
-				(th and th.mgr or THEME).status.separator_open
-					or ((th and th.mgr or THEME).status.sep_right and (th and th.mgr or THEME).status.sep_right.open)
-			):fg(style.main.bg),
+				(th or THEME).status.separator_open or ((th or THEME).status.sep_right and (th or THEME).status.sep_right.open)
+			)
+				:fg(style.main.bg),
 			motion_span,
 			ui.Span(
-				(th and th.mgr or THEME).status.separator_close
-					or ((th and th.mgr or THEME).status.sep_right and (th and th.mgr or THEME).status.sep_right.close)
+				(th or THEME).status.separator_close
+					or ((th or THEME).status.sep_right and (th or THEME).status.sep_right.close)
 			)
 				:fg(style.main.bg)
 				:bg(style.alt.bg),
@@ -275,7 +275,7 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 							-- find command result matched part
 							-- from h1 to h2
 							highlight_spans[#highlight_spans + 1] = ui.Span(shortened_name.result:sub(h[1] + 1, h[2]))
-								:style((th and th.mgr or THEME).manager.find_keyword)
+								:style((th or THEME).manager.find_keyword)
 							last = h[2]
 						end
 
