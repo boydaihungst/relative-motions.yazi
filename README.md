@@ -1,12 +1,14 @@
 # relative-motions.yazi
 
+This is a fork. Check the original repo [here](https://github.com/dedukun/relative-motions.yazi)
 A [Yazi](https://github.com/sxyazi/yazi) plugin based about vim motions.
 
 https://github.com/dedukun/relative-motions.yazi/assets/25795432/04fb186a-5efe-442d-8d7b-2dccb6eee408
 
 **(New) Smart truncate feature**
+Works with symlinks, files, and folders. No interference with linemodes.
 
-![(New) Smart truncate](https://i.imgur.com/P8WKB4B.png)
+![](assets/2025-05-14-16-07-37.png)
 
 ## Requirements
 
