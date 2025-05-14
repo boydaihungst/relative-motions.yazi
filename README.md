@@ -1,10 +1,19 @@
 # relative-motions.yazi (fork)
 
+<!--toc:start-->
+
+- [relative-motions.yazi (fork)](#relative-motionsyazi-fork)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+  <!--toc:end-->
+
 A [Yazi](https://github.com/sxyazi/yazi) plugin based about vim motions.
 
 https://github.com/dedukun/relative-motions.yazi/assets/25795432/04fb186a-5efe-442d-8d7b-2dccb6eee408
 
-**(Moved) Smart truncate feature** (moved to [smart-truncate.yazi](https://github.com/boydaihungst/smart-truncate.yazi))
+**(Moved) Smart truncate feature** (moved to [smart-truncate.yazi](https://github.com/boydaihungst/smart-truncate.yazi/tree/master?tab=readme-ov-file#for-relative-motions-my-fork-plugin-users))
 
 ![(Moved) Smart truncate](https://i.imgur.com/P8WKB4B.png)
 
