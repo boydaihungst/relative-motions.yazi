@@ -1,18 +1,17 @@
-# relative-motions.yazi
+# relative-motions.yazi (fork)
 
-This is a fork. Check the original repo [here](https://github.com/dedukun/relative-motions.yazi)
 A [Yazi](https://github.com/sxyazi/yazi) plugin based about vim motions.
 
 https://github.com/dedukun/relative-motions.yazi/assets/25795432/04fb186a-5efe-442d-8d7b-2dccb6eee408
 
-**(New) Smart truncate feature**
-Works with symlinks, files, and folders. No interference with linemodes.
+**(Moved) Smart truncate feature** (moved to [smart-truncate.yazi](https://github.com/boydaihungst/smart-truncate.yazi))
 
-![](assets/2025-05-14-16-07-37.png)
+![(Moved) Smart truncate](https://i.imgur.com/P8WKB4B.png)
 
 ## Requirements
 
 - [Yazi](https://github.com/sxyazi/yazi) >= v25.2.7
+- [Smart-truncate.yazi](https://github.com/boydaihungst/smart-truncate.yazi): If you want to use smart truncate feature. Which is now disabled by default.
 
 ## Installation
 
@@ -93,7 +92,7 @@ Additionally there are a couple of initial configurations that can be given to t
 | `show_numbers`         | `relative`, `absolute`, `relative_absolute` or `none` | `none`  | Shows relative or absolute numbers before the file icon                                                                            |
 | `show_motion`          | `true` or `false`                                     | `false` | Shows current motion in Status bar                                                                                                 |
 | `only_motions`         | `true` or `false`                                     | `false` | If true, only the motion movements will be enabled, i.e., the commands for delete, cut, yank and visual selection will be disabled |
-| `smart_truncate` (new) | `true` or `false`                                     | `true`  | Truncate filename/folder and symlink, but keep extension. i.e, `long_named_file….mkv`                                              |
+| `smart_truncate` (new) | `true` or `false`                                     | `false` | Truncate filename/folder and symlink, but keep extension. i.e, `long_named_file….mkv`                                              |
 
 If you want, for example, to enable relative numbers as well as to show the motion in the status bar,
 add the following to Yazi's `init.lua`, i.e. `~/.config/yazi/init.lua`:

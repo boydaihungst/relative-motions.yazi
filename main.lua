@@ -2,6 +2,7 @@
 --- NOTE: REMOVE :parent() :name() :is_hovered() :ext() after upgrade to v25.4.4
 --- https://github.com/sxyazi/yazi/pull/2572
 
+local PackageName = "relative-motions"
 local M = {}
 -- stylua: ignore
 local MOTIONS_AND_OP_KEYS = {
@@ -34,6 +35,10 @@ local DIRECTION_KEYS = {
 -----------------------------------------------
 ----------------- R E N D E R -----------------
 -----------------------------------------------
+
+local function warn(s, ...)
+	ya.notify { title = PackageName, content = string.format(s, ...), timeout = 3, level = "warn" }
+end
 
 local render_motion_setup = ya.sync(function(_)
 	ya.render()
@@ -88,67 +93,21 @@ local render_motion = ya.sync(function(_, motion_num, motion_cmd)
 	end
 end)
 
-local function remove_suffix(str, suffix)
-	if str:sub(-#suffix) == suffix then
-		return str:sub(1, -#suffix - 1)
-	else
-		return str
-	end
-end
-
----shorten string
----@param max_width number max characters
----@param long_string string string
----@param suffix? string file extentions or any thing which will shows at the end when file is truncated
----@return { result: string, suffix: string, ellipsis_len: number }
-function M:shorten(max_width, long_string, suffix)
-	suffix = suffix or ""
-	max_width = max_width or 0
-	long_string = long_string or ""
-	suffix = "…" .. suffix
-	local suffix_len = utf8.len(suffix)
-	local s_removed_suffix = remove_suffix(long_string, suffix)
-	if utf8.len(long_string) <= max_width then
-		return { result = long_string, suffix = "", suffix_len = 0 }
-	end
-	local cut_width = max_width - utf8.len(suffix)
-	if cut_width < 0 then
-		return { result = suffix:sub(1, max_width), suffix = suffix, suffix_len = suffix_len }
-	end
-	local result = s_removed_suffix:sub(1, cut_width) .. suffix
-	return { result = result, suffix = suffix, suffix_len = suffix_len }
-end
-
-function M:get_max_length_component(entity_self, component_name)
-	for _, c in ipairs(entity_self._children) do
-		if type(c[1]) == "string" and c[1] == component_name then
-			return c.max_length
-		end
-	end
-end
-
----https://github.com/sxyazi/yazi/blob/main/yazi-plugin/preset/components/entity.lua
-local resizable_entity_child = {
-	{ id = 4 }, -- highlights/filename
-	{ id = 6 }, -- symlink
-}
-
 ---@enum render_mode
 local RENDER_MODE = {
 	SHOW_NUMBERS_ABSOLUTE = 0,
 	SHOW_NUMBERS_RELATIVE = 1,
 	SHOW_NUMBERS_RELATIVE_ABSOLUTE = 2,
 }
-
 --- Render line numbers based on RENDER_MODE
---- @param _ any
 --- @param mode render_mode
 --- @param styles {hovered: {fg: any, bg: any}, normal: {fg: any, bg: any}}
 --- @param resizable_entity_children_ids table<number, number> input list of entity children which are resizable e.g: {4, 6} id=4 is filname and find highlight, id=6 is symlink. You have to override those `Entity:method` to be able to make this work
 --- @return nil
-local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_children_ids)
+local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_children_ids)
 	ya.render()
 
+	local smart_truncate_entity_plugin_ok, smart_truncate_entity_plugin = pcall(require, "smart-truncate")
 	Entity.number = function(_, index, file, hovered, last_index)
 		local idx
 		local offset = 1
@@ -174,6 +133,42 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 		end
 	end
 
+	Parent.redraw = function(parent_self)
+		if not parent_self._folder then
+			return {}
+		end
+
+		local entities = {}
+		local parent_tab_window_w = parent_self._area.w
+		for _, f in ipairs(parent_self._folder.window) do
+			local entity = Entity:new(f)
+			if resizable_entity_children_ids then
+				if smart_truncate_entity_plugin_ok then
+					smart_truncate_entity_plugin:smart_truncate_entity(entity, parent_tab_window_w)
+				else
+					if not state.warned_smart_truncate_missing then
+						state.warned_smart_truncate_missing = true
+						warn(
+							"smart-truncate plugin is not installed, please install it to use smart truncate feature \nor set smart_truncate = false in setup function"
+						)
+						return
+					end
+				end
+			end
+			-- Fall back to default render behaviour
+			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
+				entities[#entities + 1] = entity:redraw():truncate { max = parent_self._area.w }
+			else
+				-- Using smart truncate
+				entities[#entities + 1] = ui.Line({ entity:redraw() }):style(entity:style())
+			end
+		end
+
+		return {
+			ui.List(entities):area(parent_self._area),
+		}
+	end
+
 	Current.redraw = function(current_self)
 		local files = current_self._folder.window
 		if #files == 0 then
@@ -192,175 +187,33 @@ local render_numbers = ya.sync(function(_, mode, styles, resizable_entity_childr
 
 		local entities, linemodes = {}, {}
 		for i, f in ipairs(files) do
-			local line_number_ui_component = ui.Line(Entity:number(i, f, hovered_index, last_entity_index))
+			local line_number_component = ui.Line(Entity:number(i, f, hovered_index, last_entity_index))
 			local entity = Entity:new(f)
 			local linemode_rendered = Linemode:new(f):redraw()
 			local linemode_char_length = linemode_rendered:align(ui.Text.RIGHT):width()
-
 			-- smart truncate
-			if resizable_entity_children_ids and #resizable_entity_children_ids > 0 then
-				-- Override Entity.render function for this entity
-				entity.redraw = function(entity_self)
-					-- length of line number, which is generated by this plugin,
-					local entity_line_number_char_length = line_number_ui_component:width() or 0
-					-- length of resizable entity's component/children
-					local total_length_resizable = 0
-					-- length of unresizable entity's component/children
-					local total_length_unresizable = entity_line_number_char_length + linemode_char_length
-					-- local count_resizable_component = 0
-					local count_resizable_component_with_length_not_zero = 0
-
-					-- loop through all entity children
-					for c_idx, c in ipairs(entity_self._children) do
-						local child_component = ui.Line((type(c[1]) == "string" and entity_self[c[1]] or c[1])(entity_self))
-						local is_resizable = false
-						entity_self._children[c_idx].length = child_component:width()
-						-- add some metadata for this commponent/children
-						for _, resizable_child_id in ipairs(resizable_entity_children_ids) do
-							if c.id == resizable_child_id then
-								-- count_resizable_component = count_resizable_component + 1
-								is_resizable = true
-								entity_self._children[c_idx].max_length = 0
-								entity_self._children[c_idx].component = child_component
-								total_length_resizable = total_length_resizable + child_component:width()
-								if entity_self._children[c_idx].length > 0 then
-									count_resizable_component_with_length_not_zero = count_resizable_component_with_length_not_zero + 1
-								end
-							end
-						end
-						if not is_resizable then
-							total_length_unresizable = total_length_unresizable + child_component:width()
-							entity_self._children[c_idx].max_length = entity_self._children[c_idx].length
-						end
-						entity_self._children[c_idx].resizable = is_resizable
+			if resizable_entity_children_ids then
+				if smart_truncate_entity_plugin_ok then
+					smart_truncate_entity_plugin:smart_truncate_entity(
+						entity,
+						current_tab_window_w - line_number_component:width() - linemode_char_length
+					)
+				else
+					if not state.warned_smart_truncate_missing then
+						state.warned_smart_truncate_missing = true
+						warn(
+							"smart-truncate plugin is not installed, please install it to use smart truncate feature \nor set smart_truncate = false in setup function"
+						)
+						return
 					end
-
-					local usable_space = current_tab_window_w - total_length_unresizable
-					local resizable_length_size_each_percent = 100 / total_length_resizable
-					local max_length_size_each_component = count_resizable_component_with_length_not_zero == 1 and usable_space
-						or math.floor(usable_space / count_resizable_component_with_length_not_zero)
-					local last_component_idx
-
-					-- calculate max_length for each resizable component/children
-					for c_idx, c in ipairs(entity_self._children) do
-						if c.resizable then
-							if c.length <= max_length_size_each_component then
-								entity_self._children[c_idx].max_length = c.length
-							else
-								entity_self._children[c_idx].max_length =
-									math.floor(resizable_length_size_each_percent * c.length * usable_space / 100)
-							end
-							usable_space = usable_space - entity_self._children[c_idx].max_length
-							last_component_idx = c_idx
-						end
-					end
-					if usable_space > 0 and last_component_idx then
-						entity_self._children[last_component_idx].max_length = entity_self._children[last_component_idx].max_length
-							+ usable_space
-					end
-
-					-- override these resizeable components/children render function then re-render the whole entity with truncated/shortened value
-					entity.highlights = function(entity_highlight_self)
-						local suffix = ""
-						local shortened_name
-						local name = entity_highlight_self._file.name:gsub("\r", "?", 1)
-
-						---------------------------
-						-- get max_length if highlight is resizable
-						local max_length = M:get_max_length_component(entity_highlight_self, "highlights") or 0
-						if entity_highlight_self._file.cha.is_dir then
-							shortened_name = M:shorten(max_length, name, "")
-						else
-							local ext = (
-								type(entity_highlight_self._file.url.ext) == "function" and entity_highlight_self._file.url:ext()
-								or entity_highlight_self._file.url.ext
-							) or ""
-
-							suffix = not ext and "" or ("." .. ext)
-							shortened_name = M:shorten(max_length, name, suffix)
-						end
-
-						local highlights = entity_highlight_self._file:highlights()
-						if not highlights or #highlights == 0 then
-							return shortened_name.result
-						end
-
-						-- This will run when use find command
-						---@see https://yazi-rs.github.io/docs/configuration/keymap#manager.find
-						-- find 22
-						-- 1223225 -> hightlight[1] = search22
-						-- loop 1--> h[1] = 1, h[2] = 3
-						-- loop 2--> h[1] = 4 h[2] = 6
-						-- loop done--> the rest normal
-						-- truncated file will look like this
-						-- abcxyzasd….txt
-						-- this is in find mode/command
-						-- abcxyzasd….txt [1/3] linemodes
-						-- -----------
-						local highlight_spans, last = {}, 0
-
-						for _, h in ipairs(highlights) do
-							-- escape when highlight position is hidden
-							if
-								h[2] > utf8.len(shortened_name.result) - shortened_name.suffix_len
-								or h[1] > utf8.len(shortened_name.result) - shortened_name.suffix_len
-							then
-								goto break_highlight_loop
-							end
-							-- find command result not matched part
-							-- from last to h1
-							if h[1] > last then
-								highlight_spans[#highlight_spans + 1] = ui.Span(shortened_name.result:sub(last + 1, h[1]))
-							end
-							-- find command result matched part
-							-- from h1 to h2
-							highlight_spans[#highlight_spans + 1] = ui.Span(shortened_name.result:sub(h[1] + 1, h[2]))
-								:style((th.mgr or THEME.manager).find_keyword)
-							last = h[2]
-						end
-
-						::break_highlight_loop::
-						-- the rest not matched
-						-- from h2 to the end of file/folder name
-						if last < utf8.len(shortened_name.result) then
-							highlight_spans[#highlight_spans + 1] = ui.Span(shortened_name.result:sub(last + 1))
-						end
-
-						return ui.Line(highlight_spans)
-					end
-
-					-- override symlink Entity:symlink function
-					entity.symlink = function(entity_symlink_self)
-						if not (rt and rt.mgr or MANAGER).show_symlink then
-							return ""
-						end
-
-						local link_to = entity_symlink_self._file.link_to
-						if not link_to then
-							return ""
-						end
-
-						local prefix = " -> "
-						local max_length = M:get_max_length_component(entity_symlink_self, "symlink") or 0
-
-						local to_extension = type(link_to.ext) == "function" and link_to:ext() or link_to.ext
-						local suffix = not to_extension and "" or ("." .. to_extension)
-						local shortened = M:shorten(max_length, prefix .. tostring(link_to), suffix)
-
-						return ui.Span(shortened.result):style((th.mgr or THEME.manager).symlink_target)
-					end
-					-- end
-
-					-- re-render entity with line numbers
-					local lines = {}
-					for _, c in ipairs(entity_self._children) do
-						lines[#lines + 1] = (type(c[1]) == "string" and entity_self[c[1]] or c[1])(entity_self)
-					end
-					return ui.Line(lines):style(entity_self:style())
 				end
 			end
-			entities[#entities + 1] = ui.Line({ line_number_ui_component, entity:redraw() }):style(entity:style())
+
+			entities[#entities + 1] = ui.Line({ line_number_component, entity:redraw() }):style(entity:style())
 			linemodes[#linemodes + 1] = linemode_rendered
+			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
+				entities[#entities]:truncate { max = math.max(0, current_self._area.w - linemodes[#linemodes]:width()) }
+			end
 		end
 
 		return {
@@ -464,7 +317,7 @@ function M:setup(args)
 	---@type boolean
 	local smart_truncate = args["smart_truncate"]
 	local resizable_entity_children_ids = { 4, 6 }
-	if smart_truncate == false then
+	if not smart_truncate then
 		resizable_entity_children_ids = nil
 	end
 
