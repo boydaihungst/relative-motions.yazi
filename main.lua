@@ -48,7 +48,7 @@ local render_motion_setup = ya.sync(function(_)
 	Status.children_redraw = function(self, side)
 		local lines = {}
 		if side == self.RIGHT then
-			lines[1] = self:motion(self)
+			lines[1] = self:motion()
 		end
 		for _, c in ipairs(side == self.RIGHT and self._right or self._left) do
 			lines[#lines + 1] = (type(c[1]) == "string" and self[c[1]] or c[1])(self)
