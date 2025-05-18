@@ -37,7 +37,7 @@ local DIRECTION_KEYS = {
 -----------------------------------------------
 
 local function warn(s, ...)
-	ya.notify { title = PackageName, content = string.format(s, ...), timeout = 3, level = "warn" }
+	ya.notify { title = PackageName, content = string.format(s, ...), timeout = 5, level = "warn" }
 end
 
 local render_motion_setup = ya.sync(function(_)
@@ -108,6 +108,7 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 	ya.render()
 
 	local smart_truncate_entity_plugin_ok, smart_truncate_entity_plugin = pcall(require, "smart-truncate")
+
 	Entity.number = function(_, index, file, hovered, last_index)
 		local idx
 		local offset = 1
@@ -144,7 +145,16 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 			local entity = Entity:new(f)
 			if resizable_entity_children_ids then
 				if smart_truncate_entity_plugin_ok then
-					smart_truncate_entity_plugin:smart_truncate_entity(entity, parent_tab_window_w)
+					if not smart_truncate_entity_plugin:is_setup_loaded() then
+						if not state.warned_smart_truncate_missing then
+							state.warned_smart_truncate_missing = true
+							warn(
+								"smart-truncate plugin is installed, but your forgot to call its setup function \nor you could set smart_truncate = false in setup function"
+							)
+						end
+					else
+						smart_truncate_entity_plugin:smart_truncate_entity(entity, parent_tab_window_w)
+					end
 				else
 					if not state.warned_smart_truncate_missing then
 						state.warned_smart_truncate_missing = true
@@ -157,8 +167,14 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 			end
 			-- Fall back to default render behaviour
 			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
-				entities[#entities + 1] =
-					entity:redraw():truncate { max = parent_self._area.w, ellipsis = entity:ellipsis(self._area.w) }
+				if state.support_default_truncate then
+					entities[#entities + 1] = entity:redraw():truncate {
+						max = parent_self._area.w,
+						ellipsis = entity:ellipsis(self._area.w),
+					}
+				else
+					entities[#entities + 1] = Entity:new(f):redraw()
+				end
 			else
 				-- Using smart truncate
 				entities[#entities + 1] = ui.Line({ entity:redraw() }):style(entity:style())
@@ -195,10 +211,19 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 			-- smart truncate
 			if resizable_entity_children_ids then
 				if smart_truncate_entity_plugin_ok then
-					smart_truncate_entity_plugin:smart_truncate_entity(
-						entity,
-						current_tab_window_w - line_number_component:width() - linemode_char_length
-					)
+					if not smart_truncate_entity_plugin:is_setup_loaded() then
+						if not state.warned_smart_truncate_missing then
+							state.warned_smart_truncate_missing = true
+							warn(
+								"smart-truncate plugin is installed, but your forgot to call its setup function \nor you could set smart_truncate = false in setup function"
+							)
+						end
+					else
+						smart_truncate_entity_plugin:smart_truncate_entity(
+							entity,
+							current_tab_window_w - line_number_component:width() - linemode_char_length
+						)
+					end
 				else
 					if not state.warned_smart_truncate_missing then
 						state.warned_smart_truncate_missing = true
@@ -215,8 +240,10 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 
 			-- fallback to default render behaviour
 			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
-				local max = math.max(0, current_self._area.w - linemodes[#linemodes]:width())
-				entities[#entities]:truncate { max = max, ellipsis = entity:ellipsis(max) }
+				if state.support_default_truncate then
+					local max = math.max(0, current_self._area.w - linemodes[#linemodes]:width())
+					entities[#entities]:truncate { max = max, ellipsis = entity:ellipsis(max) }
+				end
 			end
 		end
 
@@ -321,6 +348,9 @@ function M:setup(args)
 	---@type boolean
 	local smart_truncate = args["smart_truncate"]
 	local resizable_entity_children_ids = { 4, 6 }
+	if type(ui.List({}).area) == "function" then
+		state.support_default_truncate = true
+	end
 	if not smart_truncate then
 		resizable_entity_children_ids = nil
 	end
