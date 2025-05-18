@@ -157,7 +157,8 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 			end
 			-- Fall back to default render behaviour
 			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
-				entities[#entities + 1] = entity:redraw():truncate { max = parent_self._area.w }
+				entities[#entities + 1] =
+					entity:redraw():truncate { max = parent_self._area.w, ellipsis = entity:ellipsis(self._area.w) }
 			else
 				-- Using smart truncate
 				entities[#entities + 1] = ui.Line({ entity:redraw() }):style(entity:style())
@@ -211,8 +212,11 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 
 			entities[#entities + 1] = ui.Line({ line_number_component, entity:redraw() }):style(entity:style())
 			linemodes[#linemodes + 1] = linemode_rendered
+
+			-- fallback to default render behaviour
 			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
-				entities[#entities]:truncate { max = math.max(0, current_self._area.w - linemodes[#linemodes]:width()) }
+				local max = math.max(0, current_self._area.w - linemodes[#linemodes]:width())
+				entities[#entities]:truncate { max = max, ellipsis = entity:ellipsis(max) }
 			end
 		end
 
