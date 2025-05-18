@@ -170,7 +170,7 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 				if state.support_default_truncate then
 					entities[#entities + 1] = entity:redraw():truncate {
 						max = parent_self._area.w,
-						ellipsis = entity:ellipsis(self._area.w),
+						ellipsis = entity:ellipsis(parent_self._area.w),
 					}
 				else
 					entities[#entities + 1] = Entity:new(f):redraw()
