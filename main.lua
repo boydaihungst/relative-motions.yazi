@@ -1,6 +1,4 @@
---- @since 25.2.7
---- NOTE: REMOVE :parent() :name() :is_hovered() :ext() after upgrade to v25.4.4
---- https://github.com/sxyazi/yazi/pull/2572
+--- @since 25.4.8
 
 local PackageName = "relative-motions"
 local M = {}
@@ -55,9 +53,6 @@ local render_motion_setup = ya.sync(function(_)
 		end
 		return ui.Line(lines)
 	end
-
-	-- TODO: check why it doesn't work line this
-	-- Status:children_add(Status.motion, 100, Status.RIGHT)
 end)
 
 local render_motion = ya.sync(function(_, motion_num, motion_cmd)
@@ -77,17 +72,9 @@ local render_motion = ya.sync(function(_, motion_num, motion_cmd)
 			motion_span = ui.Span(string.format(" %d%s ", motion_num, motion_cmd)):style(style.main)
 		end
 		return ui.Line {
-			ui.Span(
-				(th or THEME).status.separator_open or ((th or THEME).status.sep_right and (th or THEME).status.sep_right.open)
-			)
-				:fg(style.main.bg),
+			ui.Span(th.status.sep_right.open):fg(style.main.bg),
 			motion_span,
-			ui.Span(
-				(th or THEME).status.separator_close
-					or ((th or THEME).status.sep_right and (th or THEME).status.sep_right.close)
-			)
-				:fg(style.main.bg)
-				:bg(style.alt.bg),
+			ui.Span(th.status.sep_right.close):fg(style.main.bg):bg(style.alt.bg),
 			ui.Span(" "),
 		}
 	end
@@ -196,7 +183,7 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 		local hovered_index
 		local current_tab_window_w = current_self._area.w
 		for i, f in ipairs(files) do
-			if type(f.is_hovered) == "function" and f:is_hovered() or f.is_hovered then
+			if f.is_hovered then
 				hovered_index = i
 				break
 			end
@@ -388,8 +375,8 @@ function M:entry(job)
 
 	if cmd == "g" then
 		if direction == "g" then
-			ya.manager_emit("arrow", { "top" })
-			ya.manager_emit("arrow", { lines - 1 })
+			ya.mgr_emit("arrow", { "top" })
+			ya.mgr_emit("arrow", { lines - 1 })
 			render_clear()
 			return
 		elseif direction == "j" then
@@ -397,7 +384,7 @@ function M:entry(job)
 		elseif direction == "k" then
 			cmd = "k"
 		elseif direction == "t" then
-			ya.manager_emit("tab_switch", { lines - 1 })
+			ya.mgr_emit("tab_switch", { lines - 1 })
 			render_clear()
 			return
 		else
@@ -408,53 +395,53 @@ function M:entry(job)
 	end
 
 	if cmd == "j" then
-		ya.manager_emit("arrow", { lines })
+		ya.mgr_emit("arrow", { lines })
 	elseif cmd == "k" then
-		ya.manager_emit("arrow", { -lines })
+		ya.mgr_emit("arrow", { -lines })
 	elseif is_tab_command(cmd) then
 		if cmd == "t" then
 			for _ = 1, lines do
-				ya.manager_emit("tab_create", {})
+				ya.mgr_emit("tab_create", {})
 			end
 		elseif cmd == "H" then
-			ya.manager_emit("tab_switch", { -lines, relative = true })
+			ya.mgr_emit("tab_switch", { -lines, relative = true })
 		elseif cmd == "L" then
-			ya.manager_emit("tab_switch", { lines, relative = true })
+			ya.mgr_emit("tab_switch", { lines, relative = true })
 		elseif cmd == "w" then
-			ya.manager_emit("tab_close", { lines - 1 })
+			ya.mgr_emit("tab_close", { lines - 1 })
 		elseif cmd == "W" then
 			local curr_tab = get_active_tab()
 			local del_tab = curr_tab + lines - 1
 			for _ = curr_tab, del_tab do
-				ya.manager_emit("tab_close", { curr_tab - 1 })
+				ya.mgr_emit("tab_close", { curr_tab - 1 })
 			end
-			ya.manager_emit("tab_switch", { curr_tab - 1 })
+			ya.mgr_emit("tab_switch", { curr_tab - 1 })
 		elseif cmd == "<" then
-			ya.manager_emit("tab_swap", { -lines })
+			ya.mgr_emit("tab_swap", { -lines })
 		elseif cmd == ">" then
-			ya.manager_emit("tab_swap", { lines })
+			ya.mgr_emit("tab_swap", { lines })
 		elseif cmd == "~" then
 			local jump = lines - get_active_tab()
-			ya.manager_emit("tab_swap", { jump })
+			ya.mgr_emit("tab_swap", { jump })
 		end
 	else
-		ya.manager_emit("visual_mode", {})
+		ya.mgr_emit("visual_mode", {})
 		-- invert direction when user specifies it
 		if direction == "k" then
-			ya.manager_emit("arrow", { -lines })
+			ya.mgr_emit("arrow", { -lines })
 		elseif direction == "j" then
-			ya.manager_emit("arrow", { lines })
+			ya.mgr_emit("arrow", { lines })
 		else
-			ya.manager_emit("arrow", { lines - 1 })
+			ya.mgr_emit("arrow", { lines - 1 })
 		end
-		ya.manager_emit("escape", {})
+		ya.mgr_emit("escape", {})
 
 		if cmd == "d" then
-			ya.manager_emit("remove", {})
+			ya.mgr_emit("remove", {})
 		elseif cmd == "y" then
-			ya.manager_emit("yank", {})
+			ya.mgr_emit("yank", {})
 		elseif cmd == "x" then
-			ya.manager_emit("yank", { cut = true })
+			ya.mgr_emit("yank", { cut = true })
 		end
 	end
 

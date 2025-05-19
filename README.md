@@ -19,7 +19,7 @@ https://github.com/dedukun/relative-motions.yazi/assets/25795432/04fb186a-5efe-4
 
 ## Requirements
 
-- [Yazi](https://github.com/sxyazi/yazi) >= v25.2.7
+- [Yazi](https://github.com/sxyazi/yazi) >= v25.4.8
 - [Smart-truncate.yazi](https://github.com/boydaihungst/smart-truncate.yazi): If you want to use smart truncate feature. Which is now disabled by default.
 
 ## Installation
