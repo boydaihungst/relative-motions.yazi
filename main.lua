@@ -1,4 +1,4 @@
---- @since 25.4.8
+--- @since 25.5.28
 
 local PackageName = "relative-motions"
 local M = {}
@@ -154,14 +154,10 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 			end
 			-- Fall back to default render behaviour
 			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
-				if state.support_default_truncate then
-					entities[#entities + 1] = entity:redraw():truncate {
-						max = parent_self._area.w,
-						ellipsis = entity:ellipsis(parent_self._area.w),
-					}
-				else
-					entities[#entities + 1] = Entity:new(f):redraw()
-				end
+				entities[#entities + 1] = entity:redraw():truncate {
+					max = parent_self._area.w,
+					ellipsis = entity:ellipsis(parent_self._area.w),
+				}
 			else
 				-- Using smart truncate
 				entities[#entities + 1] = ui.Line({ entity:redraw() }):style(entity:style())
@@ -194,7 +190,7 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 			local line_number_component = ui.Line(Entity:number(i, f, hovered_index, last_entity_index))
 			local entity = Entity:new(f)
 			local linemode_rendered = Linemode:new(f):redraw()
-			local linemode_char_length = linemode_rendered:align(ui.Text.RIGHT):width()
+			local linemode_char_length = linemode_rendered:align(ui.Align.RIGHT):width()
 			-- smart truncate
 			if resizable_entity_children_ids then
 				if smart_truncate_entity_plugin_ok then
@@ -227,16 +223,14 @@ local render_numbers = ya.sync(function(state, mode, styles, resizable_entity_ch
 
 			-- fallback to default render behaviour
 			if state.warned_smart_truncate_missing or not resizable_entity_children_ids then
-				if state.support_default_truncate then
-					local max = math.max(0, current_self._area.w - linemodes[#linemodes]:width())
-					entities[#entities]:truncate { max = max, ellipsis = entity:ellipsis(max) }
-				end
+				local max = math.max(0, current_self._area.w - linemodes[#linemodes]:width())
+				entities[#entities]:truncate { max = max, ellipsis = entity:ellipsis(max) }
 			end
 		end
 
 		return {
 			ui.List(entities):area(current_self._area),
-			ui.Text(linemodes):area(current_self._area):align(ui.Text.RIGHT),
+			ui.Text(linemodes):area(current_self._area):align(ui.Align.RIGHT),
 		}
 	end
 end)
@@ -335,9 +329,6 @@ function M:setup(args)
 	---@type boolean
 	local smart_truncate = args["smart_truncate"]
 	local resizable_entity_children_ids = { 4, 6 }
-	if type(ui.List({}).area) == "function" then
-		state.support_default_truncate = true
-	end
 	if not smart_truncate then
 		resizable_entity_children_ids = nil
 	end
@@ -375,8 +366,8 @@ function M:entry(job)
 
 	if cmd == "g" then
 		if direction == "g" then
-			ya.mgr_emit("arrow", { "top" })
-			ya.mgr_emit("arrow", { lines - 1 })
+			ya.emit("arrow", { "top" })
+			ya.emit("arrow", { lines - 1 })
 			render_clear()
 			return
 		elseif direction == "j" then
@@ -384,7 +375,7 @@ function M:entry(job)
 		elseif direction == "k" then
 			cmd = "k"
 		elseif direction == "t" then
-			ya.mgr_emit("tab_switch", { lines - 1 })
+			ya.emit("tab_switch", { lines - 1 })
 			render_clear()
 			return
 		else
@@ -395,53 +386,53 @@ function M:entry(job)
 	end
 
 	if cmd == "j" then
-		ya.mgr_emit("arrow", { lines })
+		ya.emit("arrow", { lines })
 	elseif cmd == "k" then
-		ya.mgr_emit("arrow", { -lines })
+		ya.emit("arrow", { -lines })
 	elseif is_tab_command(cmd) then
 		if cmd == "t" then
 			for _ = 1, lines do
-				ya.mgr_emit("tab_create", {})
+				ya.emit("tab_create", {})
 			end
 		elseif cmd == "H" then
-			ya.mgr_emit("tab_switch", { -lines, relative = true })
+			ya.emit("tab_switch", { -lines, relative = true })
 		elseif cmd == "L" then
-			ya.mgr_emit("tab_switch", { lines, relative = true })
+			ya.emit("tab_switch", { lines, relative = true })
 		elseif cmd == "w" then
-			ya.mgr_emit("tab_close", { lines - 1 })
+			ya.emit("tab_close", { lines - 1 })
 		elseif cmd == "W" then
 			local curr_tab = get_active_tab()
 			local del_tab = curr_tab + lines - 1
 			for _ = curr_tab, del_tab do
-				ya.mgr_emit("tab_close", { curr_tab - 1 })
+				ya.emit("tab_close", { curr_tab - 1 })
 			end
-			ya.mgr_emit("tab_switch", { curr_tab - 1 })
+			ya.emit("tab_switch", { curr_tab - 1 })
 		elseif cmd == "<" then
-			ya.mgr_emit("tab_swap", { -lines })
+			ya.emit("tab_swap", { -lines })
 		elseif cmd == ">" then
-			ya.mgr_emit("tab_swap", { lines })
+			ya.emit("tab_swap", { lines })
 		elseif cmd == "~" then
 			local jump = lines - get_active_tab()
-			ya.mgr_emit("tab_swap", { jump })
+			ya.emit("tab_swap", { jump })
 		end
 	else
-		ya.mgr_emit("visual_mode", {})
+		ya.emit("visual_mode", {})
 		-- invert direction when user specifies it
 		if direction == "k" then
-			ya.mgr_emit("arrow", { -lines })
+			ya.emit("arrow", { -lines })
 		elseif direction == "j" then
-			ya.mgr_emit("arrow", { lines })
+			ya.emit("arrow", { lines })
 		else
-			ya.mgr_emit("arrow", { lines - 1 })
+			ya.emit("arrow", { lines - 1 })
 		end
-		ya.mgr_emit("escape", {})
+		ya.emit("escape", {})
 
 		if cmd == "d" then
-			ya.mgr_emit("remove", {})
+			ya.emit("remove", {})
 		elseif cmd == "y" then
-			ya.mgr_emit("yank", {})
+			ya.emit("yank", {})
 		elseif cmd == "x" then
-			ya.mgr_emit("yank", { cut = true })
+			ya.emit("yank", { cut = true })
 		end
 	end
 

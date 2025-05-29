@@ -19,12 +19,14 @@ https://github.com/dedukun/relative-motions.yazi/assets/25795432/04fb186a-5efe-4
 
 ## Requirements
 
-- [Yazi](https://github.com/sxyazi/yazi) >= v25.4.8
+- [Yazi](https://github.com/sxyazi/yazi) >= v25.5.28
 - [Smart-truncate.yazi](https://github.com/boydaihungst/smart-truncate.yazi): If you want to use smart truncate feature. Which is now disabled by default.
 
 ## Installation
 
 ```sh
+ya pkg add boydaihungst/relative-motions
+# or
 ya pack -a boydaihungst/relative-motions
 ```
 
@@ -35,47 +37,47 @@ If you want to use the numbers directly to start a motion add this to your `keym
 <details>
 
 ```toml
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "1" ]
 run = "plugin relative-motions -- 1"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "2" ]
 run = "plugin relative-motions -- 2"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "3" ]
 run = "plugin relative-motions -- 3"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "4" ]
 run = "plugin relative-motions -- 4"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "5" ]
 run = "plugin relative-motions -- 5"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "6" ]
 run = "plugin relative-motions -- 6"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "7" ]
 run = "plugin relative-motions -- 7"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "8" ]
 run = "plugin relative-motions -- 8"
 desc = "Move in relative steps"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "9" ]
 run = "plugin relative-motions -- 9"
 desc = "Move in relative steps"
@@ -86,7 +88,7 @@ desc = "Move in relative steps"
 Alternatively you can use a key to trigger a new motion without any initial value, for that add the following in `keymap.toml`:
 
 ```toml
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "m" ]
 run = "plugin relative-motions"
 desc = "Trigger a new relative motion"
